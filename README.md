@@ -20,7 +20,7 @@
 
 ```bash
 # Clone the repository
-git clone git@github.com:isabelmoore/mote-ros.git
+git clone git@github.com:isabelmoore/mote_ros.git
 # Navigate to the project directory
-cd mote-ros
+cd mote_ros
 # [Add additional setup/installation commands here]
