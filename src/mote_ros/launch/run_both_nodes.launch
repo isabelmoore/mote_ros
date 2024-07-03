@@ -4,8 +4,8 @@
   </node>
 
   <!-- Launch the Yaw Configure node -->
-  <!-- <node name="yaw_configure_node" pkg="mote_ros" type="yaw_configure_node.py" output="screen" launch-prefix="python3">
-  </node> -->
+  <node name="yaw_configure_node" pkg="mote_ros" type="yaw_configure_node.py" output="screen" launch-prefix="python3">
+  </node>
 
   <!-- Launch the Health Monitoring node
   <node name="health_monitor_node" pkg="mote_ros" type="health_monitor_node.py" output="screen" launch-prefix="python3">
