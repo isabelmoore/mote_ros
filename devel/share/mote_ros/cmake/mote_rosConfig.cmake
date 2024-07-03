@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(mote_ros_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT " " STREQUAL " ")
+if(NOT "/home/wizard/sharf/devel/include " STREQUAL " ")
   set(mote_ros_INCLUDE_DIRS "")
-  set(_include_dirs "")
+  set(_include_dirs "/home/wizard/sharf/devel/include")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")
@@ -177,7 +177,7 @@ foreach(library ${libraries})
   endif()
 endforeach()
 
-set(mote_ros_EXPORTED_TARGETS "")
+set(mote_ros_EXPORTED_TARGETS "mote_ros_generate_messages_cpp;mote_ros_generate_messages_eus;mote_ros_generate_messages_lisp;mote_ros_generate_messages_nodejs;mote_ros_generate_messages_py")
 # create dummy targets for exported code generation targets to make life of users easier
 foreach(t ${mote_ros_EXPORTED_TARGETS})
   if(NOT TARGET ${t})
@@ -185,7 +185,7 @@ foreach(t ${mote_ros_EXPORTED_TARGETS})
   endif()
 endforeach()
 
-set(depends "")
+set(depends "geometry_msgs;roscpp;rospy;sensor_msgs;std_msgs;message_runtime")
 foreach(depend ${depends})
   string(REPLACE " " ";" depend_list ${depend})
   # the package name of the dependency must be kept in a unique variable so that it is not overwritten in recursive calls
@@ -214,7 +214,7 @@ foreach(depend ${depends})
   _list_append_deduplicate(mote_ros_EXPORTED_TARGETS ${${mote_ros_dep}_EXPORTED_TARGETS})
 endforeach()
 
-set(pkg_cfg_extras "")
+set(pkg_cfg_extras "mote_ros-msg-extras.cmake")
 foreach(extra ${pkg_cfg_extras})
   if(NOT IS_ABSOLUTE ${extra})
     set(extra ${mote_ros_DIR}/${extra})

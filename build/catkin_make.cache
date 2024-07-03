@@ -1,2 +1,2 @@
-mote_ros:vectornav
+mote_ros:rviz_sim:vectornav
 -DCATKIN_DEVEL_PREFIX=/home/wizard/sharf/devel -DCMAKE_INSTALL_PREFIX=/home/wizard/sharf/install -G Unix Makefiles

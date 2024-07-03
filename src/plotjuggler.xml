@@ -1,46 +1,48 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
- <tabbed_widget name="Main Window" parent="main_window">
-  <Tab tab_name="tab1" containers="1">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab containers="1" tab_name="tab1">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
+    <DockSplitter count="1" orientation="-" sizes="1">
      <DockArea name="...">
-      <plot flip_x="false" style="Lines" mode="XYPlot" flip_y="false">
-       <range bottom="740799.826986" top="740807.745324" right="3392443.773717" left="3392435.220855"/>
+      <plot flip_x="false" flip_y="false" style="Lines" mode="XYPlot">
+       <range left="3392432.817620" top="740812.006151" right="3392457.980533" bottom="740788.710039"/>
        <limitY/>
-       <curve curve_y="/kalman_filtered_position/twist/linear/y" curve_x="/kalman_filtered_position/twist/linear/x" name="/kalman_filtered_position/twist/linear/[x;y]" color="#1f77b4"/>
+       <curve color="#1f77b4" curve_x="/kalman_filtered_position/twist/linear/x" name="/kalman_filtered_position/twist/linear/[x;y]" curve_y="/kalman_filtered_position/twist/linear/y"/>
+       <curve color="#d62728" curve_x="/new_position/point/x" name="/new_position/point/[x;y]" curve_y="/new_position/point/y"/>
+       <curve color="#1ac938" curve_x="/utm_position/twist/linear/x" name="/utm_position/twist/linear/[x;y]" curve_y="/utm_position/twist/linear/y"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab tab_name="tab2" containers="1">
+  <Tab containers="1" tab_name="tab2">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
+    <DockSplitter count="1" orientation="-" sizes="1">
      <DockArea name="...">
-      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
-       <range bottom="-147.293746" top="-106.249322" right="1717699576.785884" left="1717699567.535291"/>
+      <plot flip_x="false" flip_y="false" style="Lines" mode="TimeSeries">
+       <range left="1718215950.438355" top="3.393889" right="1718216140.660875" bottom="-0.082778"/>
        <limitY/>
-       <curve name="/vectornav/INS/yaw" color="#d62728"/>
+       <curve color="#ff7f0e" name="/vehicle/twist/twist/linear/x"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab tab_name="tab3" containers="1">
+  <Tab containers="1" tab_name="tab3">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
+    <DockSplitter count="1" orientation="-" sizes="1">
      <DockArea name="...">
-      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
-       <range bottom="-0.076875" top="3.151875" right="1717699577.137147" left="1717699567.137427"/>
+      <plot flip_x="false" flip_y="false" style="Lines" mode="TimeSeries">
+       <range left="1718215955.474063" top="181.932827" right="1718216140.665795" bottom="-181.427014"/>
        <limitY/>
-       <curve name="/vehicle/twist/twist/linear/x" color="#1ac938"/>
+       <curve color="#f14cc1" name="/vectornav/INS/yaw"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <currentTabIndex index="0"/>
+  <currentTabIndex index="1"/>
  </tabbed_widget>
  <use_relative_time_offset enabled="0"/>
  <!-- - - - - - - - - - - - - - - -->
@@ -65,7 +67,7 @@
    <max_array_size value="100"/>
    <boolean_strings_to_number value="true"/>
    <remove_suffix_from_strings value="true"/>
-   <selected_topics value="/kalman_filtered_position;/vectornav/INS;/vehicle/twist"/>
+   <selected_topics value="/kalman_filtered_position;/new_position;/utm_position;/vehicle/twist;/vectornav/INS"/>
   </plugin>
   <plugin ID="UDP Server"/>
   <plugin ID="WebSocket Server"/>

@@ -6,4 +6,5 @@
 # testing this directory and lists subdirectories to be tested as well.
 subdirs("gtest")
 subdirs("mote_ros")
+subdirs("rviz_sim")
 subdirs("vectornav")

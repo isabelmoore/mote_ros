@@ -132,6 +132,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/wizard/sharf/build/gtest/cmake_install.cmake")
   include("/home/wizard/sharf/build/mote_ros/cmake_install.cmake")
+  include("/home/wizard/sharf/build/rviz_sim/cmake_install.cmake")
   include("/home/wizard/sharf/build/vectornav/cmake_install.cmake")
 
 endif()

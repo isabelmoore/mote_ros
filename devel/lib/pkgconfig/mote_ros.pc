@@ -3,6 +3,6 @@ prefix=/home/wizard/sharf/devel
 Name: mote_ros
 Description: Description of mote_ros
 Version: 0.0.0
-Cflags: 
+Cflags: -I/home/wizard/sharf/devel/include
 Libs: -L${prefix}/lib 
-Requires: 
+Requires: geometry_msgs roscpp rospy sensor_msgs std_msgs message_runtime
