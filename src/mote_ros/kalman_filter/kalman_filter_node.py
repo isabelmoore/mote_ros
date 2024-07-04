@@ -12,6 +12,8 @@ import math
 from math import sqrt
 import tf.transformations
 from kalman_filter import KalmanFilter
+import datetime
+
 
 class KalmanFilterNode:
     def __init__(self):
@@ -26,6 +28,9 @@ class KalmanFilterNode:
 
         self.prev_yaw = None
         self.prev_time = None
+        self.output_file_path = '/home/wizard/sharf/kalman_filter_results.txt'
+        with open(self.output_file_path, 'w') as file:
+            file.write('Timestamp, Q Multiplier, R Multiplier, State\n')
 
     def latlon_to_utm(self, lat, lon):
         utm_coords = utm.from_latlon(lat, lon)
@@ -60,6 +65,7 @@ class KalmanFilterNode:
     def publish_state(self):
         # Publish the Kalman coordinates
         state = self.kf.x
+        rospy.logwarn(f"Publishing State: {state.flatten()}")
         state_msg = State()
         state_msg.x_position = state[0, 0]
         state_msg.y_position = state[1, 0]
@@ -97,10 +103,12 @@ class KalmanFilterNode:
         self.kf.predict()
         self.kf.update(z_pos, self.kf.H_pos, self.kf.R_pos)
         self.kf.update(z_yaw, self.kf.H_yaw, self.kf.R_yaw)
- 
+
         self.publish_state()
         self.publish_utm(north, east, self.kf.x[2, 0], msg.yaw, self.kf.x[4, 0])
-
+            
+        self.run_iterations(north, east, self.kf.x[2, 0], msg.yaw, self.kf.x[4, 0])
+        
     def twist_callback(self, msg):
         if not self.initialized:
             rospy.logwarn("Kalman filter not initialized with INS data yet")
@@ -119,6 +127,36 @@ class KalmanFilterNode:
         # Calculate yaw rate from twist message
         self.publish_state()
         self.publish_utm(north, east, z_vel[0, 0], yaw, z_yawrate[0, 0])
+        
+        self.run_iterations(north, east, z_vel[0, 0], yaw, z_yawrate[0, 0])
+    
+    def run_iterations(self, north, east, vel, yaw, yawrate):
+        q_multipliers = np.arange(0.1, 10.1, 0.5)
+        r_multipliers = np.arange(0.1, 10.1, 0.5)
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        results = []
+        for q_mult in q_multipliers:
+            for r_mult in r_multipliers:
+                # Assuming that we need to reset the state before each prediction/update cycle
+                self.kf.x = np.array([[north], [east], [vel], [yaw], [yawrate]])
+                # Run a hypothetical update/predict cycle
+                self.kf.Q = np.eye(5) * q_mult  # Adjust process noise
+                self.kf.R_pos = np.eye(2) * r_mult  # Adjust measurement noise for position as an example
+
+                # You might want to add self.kf.predict() and self.kf.update(...) here if applicable
+                self.kf.predict()
+                # Assume we're just re-using the last measurements for a hypothetical update
+                self.kf.update(np.array([[north], [east]]), self.kf.H_pos, self.kf.R_pos)
+
+                state = self.kf.x.flatten()
+                result = f'{timestamp}, {q_mult}, {r_mult}, {state}\n'
+                results.append(result)
+
+        # Write the results to a text file
+        with open(self.output_file_path, 'a') as file:
+            file.writelines(results)
+
 
 if __name__ == '__main__':
     rospy.init_node('kalman_filter_node')

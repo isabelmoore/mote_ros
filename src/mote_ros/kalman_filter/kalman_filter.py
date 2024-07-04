@@ -1,7 +1,7 @@
 import numpy as np
 
 class KalmanFilter:
-    def __init__(self):
+    def __init__(self, q_multiplier=1, r_multiplier=1):
         self.dt = 0.01  # Time step
 
         self.A = np.array([[1, 0, self.dt, 0, 0],  # state transition matrix
