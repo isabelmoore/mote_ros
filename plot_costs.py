@@ -73,111 +73,74 @@ def plot_yaw_correction_data_3d(file_path):
     ax.set_zlabel('Cost')
     ax.set_title('Monte Carlo Dead Reckoning for Yaw Correction')
     ax.legend()
-
+    # ax.set_zlim(0, 0.2)
     plt.show()
 # Example call to the function
 file_path = 'monte_carlo_results.txt'
 # plot_yaw_correction_data_3d(file_path)
 
-# Function to parse the log file
+
 def parse_log_file(file_path):
     data = []
-    with open(file_path, 'r') as file:
-        headers = file.readline().strip().split(', ')
-        state_lines = []
-        timestamp, q_multiplier, r_multiplier = None, None, None
-
-        for line in file:
-            if line.strip():
-                if '[' in line:  # Start of new entry
-                    if state_lines:
-                        state_str = ' '.join(state_lines).replace('[', '').replace(']', '').replace('\n', ' ')
-                        state_values = parse_state_values(state_str)
-                        if len(state_values) == 5:
-                            state = np.array(state_values)
-                            data.append([timestamp, q_multiplier, r_multiplier, state])
-                        state_lines = []
-                    parts = line.strip().split(', ')
+    try:
+        with open(file_path, 'r') as file:
+            file.readline()  # Skip header
+            for line in file:
+                parts = line.split(", ", 6)  # Split into timestamp, q_multiplier, and the rest
+                if len(parts) == 7:
                     timestamp = datetime.strptime(parts[0], "%Y-%m-%d %H:%M:%S")
                     q_multiplier = float(parts[1])
-                    r_multiplier = float(parts[2])
-                    state_line = parts[3].strip()
-                    state_lines.append(state_line)
-                else:
-                    state_lines.append(line.strip())
+                    
+                    # Extract R values
+                    r_pos = float(parts[2].split(":")[1])
+                    r_vel = float(parts[3].split(":")[1])
+                    r_yaw = float(parts[4].split(":")[1])
+                    r_yawrate = float(parts[5].split(":")[1])
+                    
+                    # State vector is already in the last part
+                    state_values = [float(num) for num in re.findall(r"[-\d\.]+e?[-+]?\d*", parts[6])]
 
-        # Process the last collected state lines
-        if state_lines:
-            state_str = ' '.join(state_lines).replace('[', '').replace(']', '').replace('\n', ' ')
-            state_values = parse_state_values(state_str)
-            if len(state_values) == 5:
-                state = np.array(state_values)
-                data.append([timestamp, q_multiplier, r_multiplier, state])
+                    row = [timestamp, q_multiplier, r_pos, r_vel, r_yaw, r_yawrate] + state_values
+                    data.append(row)
 
-    return pd.DataFrame(data, columns=['timestamp', 'q_multiplier', 'r_multiplier', 'state'])
+        columns = ['timestamp', 'q_multiplier', 'r_pos', 'r_vel', 'r_yaw', 'r_yawrate', 'x', 'y', 'velocity', 'yaw', 'yaw_rate']
+        df = pd.DataFrame(data, columns=columns)
+        if df.empty:
+            print("No valid data after parsing.")
+        return df
+    except Exception as e:
+        print(f"Error during parsing: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame on error
 
-def parse_state_values(state_str):
-    return [float(val) for val in re.findall(r'[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?', state_str)]
 
-def format_axis(ax):
-    ax.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
-    ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-    ax.zaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-
-# Function to plot the data
 def plot_kalman_filter_results(file_path):
     df = parse_log_file(file_path)
-    if df.empty:
-        print("No valid data to plot.")
-        return
+    if df is not None and not df.empty:
+        df['timestamp'] = df['timestamp'].apply(lambda x: x.timestamp())  # Convert datetime to timestamp
+        df['yaw'] = df['yaw'] * (np.pi / 180)
 
-    timestamps = df['timestamp'].apply(lambda x: x.timestamp())  # Convert datetime to timestamp
-    norm = colors.Normalize(vmin=timestamps.min(), vmax=timestamps.max())
-    cmap = cm.viridis
+        # Colors for different R measurements
+        colors = ['red', 'orange', 'green', 'blue']
+        state_variables = ['x', 'y', 'velocity', 'yaw', 'yaw_rate']  # Correct state variable names
+        labels = ['X Position', 'Y Position', 'Velocity', 'Yaw', 'Yaw Rate']
+        r_values = ['r_pos', 'r_vel', 'r_yaw', 'r_yawrate']
+        
+        fig = plt.figure(figsize=(15, 10))
 
-    states = np.vstack(df['state'].values)
-    x, y, velocity, yaw, yaw_rate = states.T
-    q_multipliers, r_multipliers = df['q_multiplier'], df['r_multiplier']
+        # Create subplots for each state variable
+        for i, (state_var, label) in enumerate(zip(state_variables, labels)):
+            ax = fig.add_subplot(2, 3, i + 1, projection='3d')
+            for j, (r_value, color) in enumerate(zip(r_values, colors)):
+                ax.scatter(df['timestamp'], df[r_value], df[state_var], color=color, label=f'{r_values[j]} ({label})')
+            ax.set_xlabel('Timestamp')
+            ax.set_ylabel('R value')
+            ax.set_zlabel(label)
+            ax.legend()
 
-    fig = plt.figure(figsize=(20, 15))
-
-    ax1 = fig.add_subplot(231, projection='3d')
-    ax1.scatter(q_multipliers, r_multipliers, x, c=timestamps, cmap=cmap, norm=norm)
-    ax1.set_xlabel('Q Multiplier')
-    ax1.set_ylabel('R Multiplier')
-    ax1.set_zlabel('x position')
-    format_axis(ax1)
-
-    ax2 = fig.add_subplot(232, projection='3d')
-    ax2.scatter(q_multipliers, r_multipliers, y, c=timestamps, cmap=cmap, norm=norm)
-    ax2.set_xlabel('Q Multiplier')
-    ax2.set_ylabel('R Multiplier')
-    ax2.set_zlabel('y position')
-    format_axis(ax2)
-
-    ax3 = fig.add_subplot(233, projection='3d')
-    ax3.scatter(q_multipliers, r_multipliers, velocity, c=timestamps, cmap=cmap, norm=norm)
-    ax3.set_xlabel('Q Multiplier')
-    ax3.set_ylabel('R Multiplier')
-    ax3.set_zlabel('velocity')
-    format_axis(ax3)
-
-    ax4 = fig.add_subplot(234, projection='3d')
-    ax4.scatter(q_multipliers, r_multipliers, yaw, c=timestamps, cmap=cmap, norm=norm)
-    ax4.set_xlabel('Q Multiplier')
-    ax4.set_ylabel('R Multiplier')
-    ax4.set_zlabel('yaw')
-    format_axis(ax4)
-
-    ax5 = fig.add_subplot(235, projection='3d')
-    ax5.scatter(q_multipliers, r_multipliers, yaw_rate, c=timestamps, cmap=cmap, norm=norm)
-    ax5.set_xlabel('Q Multiplier')
-    ax5.set_ylabel('R Multiplier')
-    ax5.set_zlabel('yaw rate')
-    format_axis(ax5)
-
-    plt.show()
+        plt.tight_layout()
+        plt.show()
+    else:
+        print("No valid data to plot or DataFrame is empty.")
 
 
 file_path = "/home/wizard/sharf/kalman_filter_results.txt"

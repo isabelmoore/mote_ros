@@ -65,7 +65,7 @@ class KalmanFilterNode:
     def publish_state(self):
         # Publish the Kalman coordinates
         state = self.kf.x
-        rospy.logwarn(f"Publishing State: {state.flatten()}")
+        # rospy.logwarn(f"Publishing State: {state.flatten()}")
         state_msg = State()
         state_msg.x_position = state[0, 0]
         state_msg.y_position = state[1, 0]
@@ -128,34 +128,46 @@ class KalmanFilterNode:
         self.publish_state()
         self.publish_utm(north, east, z_vel[0, 0], yaw, z_yawrate[0, 0])
         
-        self.run_iterations(north, east, z_vel[0, 0], yaw, z_yawrate[0, 0])
+        # self.run_iterations(north, east, z_vel[0, 0], yaw, z_yawrate[0, 0])
     
     def run_iterations(self, north, east, vel, yaw, yawrate):
-        q_multipliers = np.arange(0.1, 10.1, 0.5)
-        r_multipliers = np.arange(0.1, 10.1, 0.5)
+        q_multiplier = 0.5  # Example fixed Q multiplier
+        r_pos_range = np.linspace(0.1, 5, 10)  # R multiplier for position
+        r_vel_range = np.linspace(0.1, 5, 10)  # R multiplier for velocity
+        r_yaw_range = np.linspace(0.1, 5, 10)  # R multiplier for yaw
+        r_yawrate_range = np.linspace(0.1, 5, 10)  # R multiplier for yaw rate
+
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.kf.Q = np.eye(5) * q_multiplier  # Set process noise
+        rospy.logwarn('logging Q and R')
 
         results = []
-        for q_mult in q_multipliers:
-            for r_mult in r_multipliers:
-                # Assuming that we need to reset the state before each prediction/update cycle
-                self.kf.x = np.array([[north], [east], [vel], [yaw], [yawrate]])
-                # Run a hypothetical update/predict cycle
-                self.kf.Q = np.eye(5) * q_mult  # Adjust process noise
-                self.kf.R_pos = np.eye(2) * r_mult  # Adjust measurement noise for position as an example
+        # Iterate over all combinations of R multipliers for each measurement type
+        for r_pos in r_pos_range:
+            for r_vel in r_vel_range:
+                for r_yaw in r_yaw_range:
+                    for r_yawrate in r_yawrate_range:
+                        self.kf.R_pos = np.eye(2) * r_pos
+                        self.kf.R_vel = np.eye(1) * r_vel
+                        self.kf.R_yaw = np.eye(1) * r_yaw 
+                        self.kf.R_yawrate = np.eye(1) * r_yawrate 
 
-                # You might want to add self.kf.predict() and self.kf.update(...) here if applicable
-                self.kf.predict()
-                # Assume we're just re-using the last measurements for a hypothetical update
-                self.kf.update(np.array([[north], [east]]), self.kf.H_pos, self.kf.R_pos)
+                        # Reset state for a fair test each iteration
+                        self.kf.x = np.array([[north], [east], [vel], [yaw], [yawrate]])
+                        self.kf.predict()
+                        self.kf.update(np.array([[north], [east]]), self.kf.H_pos, self.kf.R_pos)
+                        self.kf.update(np.array([[vel]]), self.kf.H_vel, self.kf.R_vel)
+                        self.kf.update(np.array([[yaw]]), self.kf.H_yaw, self.kf.R_yaw)
+                        self.kf.update(np.array([[yawrate]]), self.kf.H_yawrate, self.kf.R_yawrate)
 
-                state = self.kf.x.flatten()
-                result = f'{timestamp}, {q_mult}, {r_mult}, {state}\n'
-                results.append(result)
+                        state = self.kf.x.flatten()
+                        result = f"{timestamp}, {q_multiplier}, pos:{r_pos}, vel:{r_vel}, yaw:{r_yaw}, yawrate:{r_yawrate}, {state.tolist()}\n"
+                        results.append(result)
 
         # Write the results to a text file
         with open(self.output_file_path, 'a') as file:
             file.writelines(results)
+
 
 
 if __name__ == '__main__':

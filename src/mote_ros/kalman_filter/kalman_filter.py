@@ -4,11 +4,19 @@ class KalmanFilter:
     def __init__(self, q_multiplier=1, r_multiplier=1):
         self.dt = 0.01  # Time step
 
-        self.A = np.array([[1, 0, self.dt, 0, 0],  # state transition matrix
-                        [0, 1, 0, self.dt, 0],
-                        [0, 0, 1, 0, self.dt],
-                        [0, 0, 0, 1, 0],
-                        [0, 0, 0, 0, 1]])
+        self.A = np.array([
+            [1, 0, self.dt, 0, 0],         # x-position (m)
+            [0, 1, 0, self.dt, 0],         # y-position (m)
+            [0, 0, 1, 0, 0],               # x-velocity (m/s)
+            [0, 0, 0, 1, self.dt],         # yaw (rad)
+            [0, 0, 0, 0, 1]                # yaw rate (rad/s)
+        ])
+        # self.A = np.array([[1, 0, self.dt, 0, 0],  # state transition matrix
+        #                 [0, 1, 0, self.dt, 0],
+        #                 [0, 0, 1, 0, self.dt],
+        #                 [0, 0, 0, 1, 0],
+        #                 [0, 0, 0, 0, 1]])
+
         '''
         x-position (m)
         y-position (m)

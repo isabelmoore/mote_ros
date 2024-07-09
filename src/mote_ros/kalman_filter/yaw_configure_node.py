@@ -78,11 +78,11 @@ class YawConfigureNode:
 
         self.prev_x = None
         self.prev_y = None
-        self.step_counter = 0  # Counter to keep track of steps
-        self.step_counter_ins = 0  # Counter to keep track of steps
+        self.step_counter = 0.0  # Counter to keep track of steps
+        self.step_counter_ins = 0.0  # Counter to keep track of steps
 
         self.true_yaw = 0.0
-
+        rospy.logwarn('initial yaw')
         self.output_file_path = '/home/wizard/sharf/monte_carlo_results.txt'
         with open(self.output_file_path, 'w') as file:
             file.write('Timestamp, Yaw Correction, Cost\n')
@@ -244,7 +244,7 @@ class YawConfigureNode:
             true_cost = np.mean((true_position - positions) ** 2)
         else:
             costs = {}
-            true_cost = float('inf') 
+            true_cost = float('inf') # if best yaw takes the min, this is inf; if max, this is 0
 
         if costs:
             best_yaw_correction = min(costs, key=costs.get)
@@ -281,8 +281,8 @@ class YawConfigureNode:
         with open(self.output_file_path, 'a') as file:
             for yaw, cost in costs.items():
                 file.write(f'{timestamp}, {yaw}, {cost}\n')
-            file.write(f'Timestamp: {timestamp}, True Yaw: {self.true_yaw - incorrect_yaw}, True Cost: {true_cost}, Best Yaw Correction: {best_yaw}, Best Cost: {best_cost}, {self.true_yaw - best_yaw}\n')
- 
+            rospy.logwarn('logging yaw')
+            file.write(f'Timestamp: {timestamp}, True Yaw: {self.true_yaw - incorrect_yaw}, True Cost: {true_cost}, Best Yaw Correction: {best_yaw}, Best Cost: {best_cost}, {self.true_yaw - incorrect_yaw - best_yaw}\n')
 if __name__ == '__main__':
     try:
         node = YawConfigureNode()
