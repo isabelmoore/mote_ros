@@ -122,8 +122,8 @@ class YawConfigureNode:
         return yaw_rate, current_yaw_rad, current_time
 
     def ins_callback(self, msg):
-        B_x_prime = msg.nedVelX * np.cos(msg.pitch) + msg.nedVelZ * np.sin(msg.pitch)
-        B_y_prime = msg.nedVelX * np.sin(msg.roll) * np.sin(msg.pitch) + msg.nedVelY * np.cos(msg.roll) - msg.nedVelZ * np.sin(msg.roll) * np.cos(msg.pitch)
+        # B_x_prime = msg.nedVelX * np.cos(msg.pitch) + msg.nedVelZ * np.sin(msg.pitch)
+        # B_y_prime = msg.nedVelX * np.sin(msg.roll) * np.sin(msg.pitch) + msg.nedVelY * np.cos(msg.roll) - msg.nedVelZ * np.sin(msg.roll) * np.cos(msg.pitch)
         
         # B_x_prime = np.cos(msg.pitch)
         # B_y_prime = np.sin(msg.roll) * np.sin(msg.pitch)
@@ -134,11 +134,11 @@ class YawConfigureNode:
         self.step_counter_ins += 1  
 
         if self.step_counter_ins % 50 == 0:  
-            self.euler_yaw = np.arctan2(B_y_prime, B_x_prime)
-            self.euler_yaw_rate, self.prev_euler_yaw, self.prev_euler_time = self.calculate_yaw_rate(self.euler_yaw, self.prev_euler_yaw, current_time, self.prev_euler_time)
+            # self.euler_yaw = np.arctan2(B_y_prime, B_x_prime)
+            # self.euler_yaw_rate, self.prev_euler_yaw, self.prev_euler_time = self.calculate_yaw_rate(self.euler_yaw, self.prev_euler_yaw, current_time, self.prev_euler_time)
 
-            self.ned_yaw = -math.atan2(msg.nedVelX, msg.nedVelY)
-            self.ned_yaw_rate, self.prev_ned_yaw, self.prev_ned_time = self.calculate_yaw_rate(self.ned_yaw, self.prev_ned_yaw, current_time, self.prev_ned_time)
+            # self.ned_yaw = -math.atan2(msg.nedVelX, msg.nedVelY)
+            # self.ned_yaw_rate, self.prev_ned_yaw, self.prev_ned_time = self.calculate_yaw_rate(self.ned_yaw, self.prev_ned_yaw, current_time, self.prev_ned_time)
 
             self.utm_yaw = math.radians(msg.yaw)
             self.utm_yaw_rate, self.prev_utm_yaw, self.prev_utm_time = self.calculate_yaw_rate(self.utm_yaw, self.prev_utm_yaw, current_time, self.prev_utm_time)
@@ -182,10 +182,10 @@ class YawConfigureNode:
             self.prev_x = x
             self.prev_y = y
 
-            self.eul_yaw_pub.publish( self.yaw_state_pub(self.euler_yaw, self.euler_yaw_rate, x, y))
-            self.ned_yaw_pub.publish( self.yaw_state_pub(self.ned_yaw, self.ned_yaw_rate, x, y))
+            # self.eul_yaw_pub.publish( self.yaw_state_pub(self.euler_yaw, self.euler_yaw_rate, x, y))
+            # self.ned_yaw_pub.publish( self.yaw_state_pub(self.ned_yaw, self.ned_yaw_rate, x, y))
             self.utm_yaw_pub.publish( self.yaw_state_pub(self.utm_yaw, self.utm_yaw_rate, x, y))
-            self.odom_yaw_pub.publish( self.yaw_state_pub(self.odom_yaw, self.odom_yaw_rate, x, y))
+            # self.odom_yaw_pub.publish( self.yaw_state_pub(self.odom_yaw, self.odom_yaw_rate, x, y))
         
         velocity = self.state_kf[2, 0]
         incorrect_yaw = self.state_kf[3, 0]
